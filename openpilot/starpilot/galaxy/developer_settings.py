@@ -19,6 +19,13 @@ STARPORT_HEADING_KEY = HEADING_PREFIX + "starport"
 STARPORT_HEVC_KEY = "StarPortAllowHevc"
 STARPORT_HEVC_DESCRIPTION = ("Experimental. Only for a car that offers H.265 and no H.264 video. Cars that offer H.264 are not " +
                              "affected. Applies from the next StarPort connection.")
+STARPORT_WIRED_HANDSFREE_KEY = "StarPortWiredHandsFree"
+STARPORT_WIRED_HANDSFREE_DESCRIPTION = ("Experimental. Connects to the car's hands-free profile and sends the Bluetooth pairing request "
+                                        "before asking for the screen over USB. Pair the comma in the car's Bluetooth menu first. "
+                                        "Applies from the next StarPort connection.")
+STARPORT_UNACKED_VIDEO_KEY = "StarPortUnackedVideo"
+STARPORT_UNACKED_VIDEO_DESCRIPTION = ("Experimental. Sends H.264 or H.265 video without waiting for acknowledgments. Use this if the car "
+                                      "shows video briefly and then freezes. Applies from the next StarPort connection.")
 STARPORT_EXPERIMENTS_KEY = "StarPortHeadUnitExperiments"
 STARPORT_EXPERIMENTS_DESCRIPTION = ("Shows experimental fixes for specific cars and dongles, each with its own switch. Turn off to use the " +
                                     "standard connection for every car. Applies from the next StarPort connection.")
@@ -54,6 +61,14 @@ class DeveloperSettingsOwner:
                              ("Off", "On"), available=parked, reason=STARPORT_WIFI_DESCRIPTION if parked else held, default_value="On"))
       rows.append(FeatureRow(STARPORT_HEVC_KEY, "Allow H.265 video", "On" if hevc else "Off", b"1" if hevc else b"0",
                              ("Off", "On"), available=parked, reason=STARPORT_HEVC_DESCRIPTION if parked else held, default_value="Off"))
+      handsfree = bool(status.get("wired_handsfree"))
+      rows.append(FeatureRow(STARPORT_WIRED_HANDSFREE_KEY, "Wired hands-free", "On" if handsfree else "Off",
+                             b"1" if handsfree else b"0", ("Off", "On"), available=parked,
+                             reason=STARPORT_WIRED_HANDSFREE_DESCRIPTION if parked else held, default_value="Off"))
+      unacked = bool(status.get("unacked_video"))
+      rows.append(FeatureRow(STARPORT_UNACKED_VIDEO_KEY, "Unacknowledged video", "On" if unacked else "Off",
+                             b"1" if unacked else b"0", ("Off", "On"), available=parked,
+                             reason=STARPORT_UNACKED_VIDEO_DESCRIPTION if parked else held, default_value="Off"))
       experiments = bool(status.get("head_unit_experiments"))
       chosen = set(status.get("head_unit_experiment_rules") or ())
       rows.append(FeatureRow(STARPORT_EXPERIMENTS_KEY, "Try experimental fixes", "On" if experiments else "Off",
@@ -127,6 +142,10 @@ class DeveloperSettingsOwner:
       return self._apply_starport(request, "dedicated_wifi_interface", "set_dedicated_wifi")
     if request.key == STARPORT_HEVC_KEY:
       return self._apply_starport(request, "allow_hevc", "set_allow_hevc")
+    if request.key == STARPORT_WIRED_HANDSFREE_KEY:
+      return self._apply_starport(request, "wired_handsfree", "set_wired_handsfree")
+    if request.key == STARPORT_UNACKED_VIDEO_KEY:
+      return self._apply_starport(request, "unacked_video", "set_unacked_video")
     if request.key == STARPORT_EXPERIMENTS_KEY:
       return self._apply_starport(request, "head_unit_experiments", "set_head_unit_experiments")
     if request.key.startswith(STARPORT_EXPERIMENT_PREFIX):
