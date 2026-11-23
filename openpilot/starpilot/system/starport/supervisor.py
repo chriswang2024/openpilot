@@ -2171,8 +2171,12 @@ class Supervisor:
     except Exception as error:  # music is optional; projection must never depend on it
       self.log("media_audio_unavailable", error=str(error))
     try:
-      from openpilot.starpilot.system.starport.nav_status import NavStatus
-      session.nav = NavStatus.create(session, self.log)
+      labels = head_unit_fixes.head_unit_labels(session.head_unit_info)
+      if head_unit_fixes.suppress_nav_status(labels, config["connection"]):
+        self.log("nav_status_disabled", reason="Wired Honda CR-V head unit compatibility")
+      else:
+        from openpilot.starpilot.system.starport.nav_status import NavStatus
+        session.nav = NavStatus.create(session, self.log)
     except Exception as error:  # turn-by-turn is optional; projection must never depend on it
       self.log("nav_status_unavailable", error=str(error))
     car_ended = False

@@ -24,6 +24,17 @@ SDR_LABELS = {"2": "car_make", "3": "car_model", "4": "car_year", "7": "head_uni
 
 WIRELESS, WIRED = "wireless", "wired"
 
+# This firmware stops responding after receiving active guidance on the wired
+# Android Auto navigation status channel. The rendered map uses a separate feed.
+HONDA_CRV_WIRED_NAV_STATUS = {
+  "car_make": "Honda",
+  "car_model": "TLA",
+  "car_year": "2019",
+  "head_unit_make": "Honda/09",
+  "head_unit_model": "39101TLAAA10",
+  "head_unit_software_version": "1.F1A7.11",
+}
+
 
 @dataclass(frozen=True)
 class Evidence:
@@ -144,6 +155,11 @@ def head_unit_labels(described: dict[str, Any]) -> dict[str, str]:
 
 def matches(rule: Rule, labels: dict[str, str]) -> bool:
   return all(labels.get(key, "").casefold() == value.casefold() for key, value in rule.match.items())
+
+
+def suppress_nav_status(labels: dict[str, str], transport: str) -> bool:
+  return transport == WIRED and all(labels.get(key, "").casefold() == value.casefold()
+                                    for key, value in HONDA_CRV_WIRED_NAV_STATUS.items())
 
 
 def near_miss(rule: Rule, labels: dict[str, str]) -> bool:
